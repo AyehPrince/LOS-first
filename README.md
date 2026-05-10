@@ -31,25 +31,25 @@ git clone https://github.com/AyehPrince/LOS-first.git
 4. Run the application
 
 ## Screenshots
-![LOGIN](screenshots/login-page.png)
+![LOGIN](screenshots/login-page.PNG)
 
-![LOGGED-IN](screenshots/loggedin.png)
+![LOGGED-IN](screenshots/loggedin.PNG)
 
-![INVOICES GENERATION](screenshots/invoices-generation-page.png)
+![INVOICES GENERATION](screenshots/invoices-generation-page.PNG)
 
-![CLOSED ORDERS EXHIBIT](screenshots/orders-closed.png)
+![CLOSED ORDERS EXHIBIT](screenshots/orders-closed.PNG)
 
-![ORDERS](screenshots/orders.png)
+![ORDERS](screenshots/orders.PNG)
 
-![PLACING ORDER](screenshots/placing-order.png)
+![PLACING ORDER](screenshots/placing-order.PNG)
 
-![ADMIN REPORTS](screenshots/reports-page.png)
+![ADMIN REPORTS](screenshots/reports-page.PNG)
 
-![VENDOR REGISTRATION](screenshots/vendor-registration-page.png)
+![VENDOR REGISTRATION](screenshots/vendor-registration-page.PNG)
 
-![VENDOR ACTIVATION](screenshots/vendor-activation-page.png)
+![VENDOR ACTIVATION](screenshots/vendor-activation-page.PNG)
 
-![WELCOME PAGE](screenshots/welcome-page.png)
+![WELCOME PAGE](screenshots/welcome-page.PNG)
 
 
 
