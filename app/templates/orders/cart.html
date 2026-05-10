@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4>Your Cart</h4>
+    <a href="{{ url_for('orders.clear_cart') }}" class="btn btn-outline-danger btn-sm">Clear Cart</a>
+</div>
+
+{% if cart %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item_id, item in cart.items() %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>GHS {{ '%.2f'|format(item.price) }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>GHS {{ '%.2f'|format(item.price * item.quantity) }}</td>
+                    <td>
+                        <a href="{{ url_for('orders.remove_from_cart', item_id=item_id) }}" class="text-danger small">Remove</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-end fw-bold">Total</td>
+                    <td colspan="2" class="fw-bold">GHS {{ '%.2f'|format(total) }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('orders.submit_order') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-dark px-5">Place Order</button>
+</form>
+
+{% else %}
+<p class="text-muted">Your cart is empty. <a href="{{ url_for('orders.browse') }}">Browse vendors</a></p>
+{% endif %}
+{% endblock %}

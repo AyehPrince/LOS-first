@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="mb-4">My Orders</h4>
+
+{% if orders %}
+{% for order in orders %}
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <h6 class="mb-1">{{ order.vendor.name }}</h6>
+            <span class="badge bg-{{ 'success' if order.status == 'confirmed' else 'warning text-dark' if order.status == 'pending' else 'secondary' }}">
+                {{ order.status | capitalize }}
+            </span>
+        </div>
+        <small class="text-muted">{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</small>
+        <ul class="mt-2 mb-0">
+            {% for oi in order.items %}
+            <li>{{ oi.menu_item.name }} x{{ oi.quantity }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<p class="text-muted">You haven't placed any orders yet. <a href="{{ url_for('orders.browse') }}">Order now</a></p>
+{% endif %}
+{% endblock %}

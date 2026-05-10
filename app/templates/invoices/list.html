@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4>Invoices</h4>
+</div>
+
+<div class="card shadow-sm mb-5">
+    <div class="card-body p-4">
+        <h6 class="mb-3">Generate New Invoice</h6>
+        <form method="POST" action="{{ url_for('invoices.generate_invoice') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Vendor</label>
+                    <select name="vendor_id" class="form-select" required>
+                        <option value="">Select vendor...</option>
+                        {% for v in vendors %}
+                        <option value="{{ v.id }}">{{ v.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Period Start</label>
+                    <input type="date" name="period_start" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Period End</label>
+                    <input type="date" name="period_end" class="form-control" required>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-dark w-100">Generate</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if invoices %}
+<table class="table table-bordered bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Vendor</th>
+            <th>Period</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for inv in invoices %}
+        <tr>
+            <td>{{ inv.id }}</td>
+            <td>{{ inv.vendor.name }}</td>
+            <td>{{ inv.period_start.strftime('%d %b %Y') }} — {{ inv.period_end.strftime('%d %b %Y') }}</td>
+            <td>GHS {{ '%.2f'|format(inv.total_amount) }}</td>
+            <td>
+                {% if inv.status == 'paid' %}
+                    <span class="badge bg-success">Paid</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Unpaid</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('invoices.invoice_detail', invoice_id=inv.id) }}" class="btn btn-sm btn-outline-dark">View</a>
+                {% if inv.status == 'unpaid' %}
+                <a href="{{ url_for('invoices.mark_paid', invoice_id=inv.id) }}" class="btn btn-sm btn-outline-success">Mark Paid</a>
+                {% endif %}
+                <a href="{{ url_for('invoices.export_invoice', invoice_id=inv.id) }}" class="btn btn-sm btn-outline-secondary">Export CSV</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">No invoices yet. Generate your first one above.</p>
+{% endif %}
+{% endblock %}

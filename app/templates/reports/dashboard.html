@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4>Admin Reports</h4>
+    <a href="{{ url_for('reports.export_orders') }}" class="btn btn-outline-dark btn-sm">Export All Orders CSV</a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+            <h2 class="mb-0">{{ total_orders }}</h2>
+            <small class="text-muted">Total Orders</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+            <h2 class="mb-0">GHS {{ '%.2f'|format(total_spend) }}</h2>
+            <small class="text-muted">Total Spend</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+            <h2 class="mb-0">{{ vendor_totals|length }}</h2>
+            <small class="text-muted">Active Vendors</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+            <h2 class="mb-0">{{ employee_totals|length }}</h2>
+            <small class="text-muted">Employees Ordering</small>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <h6 class="mb-3">Filter Orders</h6>
+        <form method="GET" action="{{ url_for('reports.dashboard') }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Vendor</label>
+                    <select name="vendor_id" class="form-select">
+                        <option value="">All Vendors</option>
+                        {% for v in vendors %}
+                        <option value="{{ v.id }}" {{ 'selected' if selected_vendor == v.id }}>{{ v.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Employee</label>
+                    <select name="employee_id" class="form-select">
+                        <option value="">All Employees</option>
+                        {% for e in employees %}
+                        <option value="{{ e.id }}" {{ 'selected' if selected_employee == e.id }}>{{ e.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">From</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date or '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">To</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date or '' }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-dark w-100">Filter</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Vendor Breakdown -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body p-4">
+                <h6 class="mb-3">Spend by Vendor</h6>
+                {% if vendor_totals %}
+                <table class="table table-sm">
+                    <thead><tr><th>Vendor</th><th>Orders</th><th>Total Spend</th></tr></thead>
+                    <tbody>
+                        {% for name, data in vendor_totals.items() %}
+                        <tr>
+                            <td>{{ name }}</td>
+                            <td>{{ data.orders }}</td>
+                            <td>GHS {{ '%.2f'|format(data.spend) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No data.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Employee Breakdown -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body p-4">
+                <h6 class="mb-3">Spend by Employee</h6>
+                {% if employee_totals %}
+                <table class="table table-sm">
+                    <thead><tr><th>Employee</th><th>Orders</th><th>Total Spend</th></tr></thead>
+                    <tbody>
+                        {% for name, data in employee_totals.items() %}
+                        <tr>
+                            <td>{{ name }}</td>
+                            <td>{{ data.orders }}</td>
+                            <td>GHS {{ '%.2f'|format(data.spend) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No data.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Orders Table -->
+<h6 class="mb-3">All Orders</h6>
+{% if orders %}
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-bordered mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Employee</th>
+                    <th>Vendor</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.employee.name }}</td>
+                    <td>{{ order.vendor.name }}</td>
+                    <td>
+                        {% for oi in order.items %}
+                        <small>{{ oi.menu_item.name }} x{{ oi.quantity }}</small><br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        GHS {{ '%.2f'|format(order.items|sum(attribute='quantity') * 0) }}
+                        {% set total = namespace(val=0) %}
+                        {% for oi in order.items %}
+                            {% set total.val = total.val + oi.menu_item.price * oi.quantity %}
+                        {% endfor %}
+                        GHS {{ '%.2f'|format(total.val) }}
+                    </td>
+                    <td>
+                        <span class="badge bg-{{
+                            'success' if order.status == 'delivered' else
+                            'primary' if order.status == 'confirmed' else
+                            'danger' if order.status == 'cancelled' else
+                            'warning text-dark'
+                        }}">{{ order.status | capitalize }}</span>
+                    </td>
+                    <td><small>{{ order.created_at.strftime('%d %b %Y %I:%M %p') }}</small></td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                Update
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('reports.update_order_status', order_id=order.id, status='confirmed') }}">Confirmed</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('reports.update_order_status', order_id=order.id, status='delivered') }}">Delivered</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('reports.update_order_status', order_id=order.id, status='cancelled') }}">Cancelled</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">No orders found for the selected filters.</p>
+{% endif %}
+{% endblock %}
